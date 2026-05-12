@@ -30,6 +30,7 @@ export default function PBSubscription() {
   const [tenant, setTenant] = useState<TenantRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<PlanId | null>(null);
+  const [provisioning, setProvisioning] = useState(false);
 
   const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const billingResult = query.get("billing");
@@ -56,7 +57,24 @@ export default function PBSubscription() {
     load();
   }, [user]);
 
+  const provisionTenant = async () => {
+    setProvisioning(true);
+    const { data, error } = await supabase.functions.invoke("provision-tenant", { body: {} });
+    if (error || data?.error) {
+      toast.error(data?.error || "Erro ao criar loja");
+      setProvisioning(false);
+      return;
+    }
+    setTenant((data?.tenant as TenantRow) || null);
+    setProvisioning(false);
+    toast.success("Loja criada com sucesso!");
+  };
+
   const startSubscription = async (plan: PlanId) => {
+    if (!tenant) {
+      toast.error("Crie sua loja antes de assinar");
+      return;
+    }
     setStarting(plan);
     const { data, error } = await supabase.functions.invoke("mercadopago-create-subscription", {
       body: { plan },
@@ -116,7 +134,12 @@ export default function PBSubscription() {
       ) : (
         <Card>
           <CardContent className="p-4 sm:p-5">
-            <p className="text-sm text-muted-foreground">Não encontramos um tenant vinculado a este usuário.</p>
+            <p className="text-sm text-muted-foreground">Não encontramos uma loja vincululada a este usuário.</p>
+            <div className="mt-3">
+              <Button onClick={provisionTenant} disabled={provisioning}>
+                {provisioning ? "Criando..." : "Criar minha loja"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -144,4 +167,3 @@ export default function PBSubscription() {
     </div>
   );
 }
-

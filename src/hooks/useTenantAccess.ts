@@ -42,7 +42,8 @@ export function useTenantAccess(): TenantAccess {
   }, [user]);
 
   const blocked = useMemo(() => {
-    if (!tenant) return false;
+    if (!user) return false;
+    if (!tenant) return true;
     const status = (tenant.status || "").toLowerCase();
     const billing = (tenant.billing_status || "").toLowerCase();
     const trialEnds = tenant.trial_ends_at ? new Date(tenant.trial_ends_at) : null;
@@ -60,4 +61,3 @@ export function useTenantAccess(): TenantAccess {
 
   return { loading, blocked, tenantId: tenant?.id || null };
 }
-
