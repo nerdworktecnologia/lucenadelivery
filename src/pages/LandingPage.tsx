@@ -282,9 +282,9 @@ const LandingPage = () => {
                   Comece agora — é grátis <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/demo">
+              <Link to="/signup">
                 <Button variant="outline" size="lg" className="rounded-full px-8 text-base h-12">
-                  <Play className="mr-2 h-4 w-4" /> Ver demo ao vivo
+                  <Play className="mr-2 h-4 w-4" /> Ver como funciona
                 </Button>
               </Link>
             </motion.div>
@@ -574,9 +574,9 @@ const LandingPage = () => {
                 ))}
               </div>
               <motion.div custom={5} variants={fadeUp} className="mt-8">
-                <Link to="/demo">
+                <Link to="/signup">
                   <Button className="rounded-full px-6" size="lg">
-                    Experimentar demo <ArrowRight className="ml-2 h-4 w-4" />
+                    Começar grátis <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </motion.div>

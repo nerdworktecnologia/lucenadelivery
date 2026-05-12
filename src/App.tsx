@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { useUserRole, AppRole } from "@/hooks/useUserRole";
 import { CartProvider } from "@/contexts/CartContext";
+import { useTenantAccess } from "@/hooks/useTenantAccess";
 
 const roleDefaultRoute: Record<string, string> = {
   cozinha: "/admin/cozinha",
@@ -33,7 +34,7 @@ import PBPDV from "./pages/PBPDV";
 import PBDrivers from "./pages/PBDrivers";
 import PBTracking from "./pages/PBTracking";
 import LandingPage from "./pages/LandingPage";
-import DemoTour from "./pages/DemoTour";
+import PBSubscription from "./pages/PBSubscription";
 import CPanelLayout from "./components/CPanelLayout";
 import CPDashboard from "./pages/cpanel/CPDashboard";
 import CPEmpresas from "./pages/cpanel/CPEmpresas";
@@ -50,10 +51,12 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, isRecovery } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
+  const { blocked, loading: tenantLoading } = useTenantAccess();
   const location = useLocation();
-  if (loading || roleLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (loading || roleLoading || tenantLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
   if (isRecovery) return <Navigate to="/reset-password" replace />;
   if (!user) return <Navigate to="/login" replace />;
+  if (blocked && location.pathname !== "/admin/assinatura") return <Navigate to="/admin/assinatura" replace />;
   // Redirect staff roles to their default page if they hit /admin
   if (role && roleDefaultRoute[role] && location.pathname === "/admin") {
     return <Navigate to={roleDefaultRoute[role]} replace />;
@@ -94,8 +97,7 @@ const App = () => (
               <Route path="/" element={<LandingPage />} />
               <Route path="/cardapio/:slug" element={<PBMenu />} />
               <Route path="/rastreio/:id" element={<PBTracking />} />
-              <Route path="/cardapio" element={<Navigate to="/cardapio/tempero-de-maria" replace />} />
-              <Route path="/demo" element={<DemoTour />} />
+              <Route path="/cardapio" element={<Navigate to="/" replace />} />
               <Route path="/install" element={<Install />} />
               <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
               <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
@@ -112,6 +114,7 @@ const App = () => (
                 <Route path="whatsapp" element={<PBWhatsApp />} />
                 <Route path="relatorios" element={<PBReports />} />
                 <Route path="config" element={<PBSettings />} />
+                <Route path="assinatura" element={<PBSubscription />} />
                 <Route path="equipe" element={<PBStaff />} />
                 <Route path="entregadores" element={<PBDrivers />} />
               </Route>

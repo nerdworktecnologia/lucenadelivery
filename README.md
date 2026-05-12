@@ -54,6 +54,26 @@ This repo includes an idempotent migration that fixes the `public.handle_new_use
 
 Apply the latest migrations to your Supabase project (via Supabase CLI or the SQL editor) and try signing up again.
 
+## Assinaturas (Mercado Pago)
+
+Integração via Supabase Edge Functions:
+
+- `mercadopago-create-subscription`: cria uma assinatura e retorna o `init_point` para redirecionar o usuário
+- `mercadopago-webhook`: recebe eventos do Mercado Pago e atualiza o status da assinatura/tenant
+
+Secrets necessários no Supabase (NÃO colocar no frontend):
+
+- `MERCADOPAGO_ACCESS_TOKEN`
+- `MERCADOPAGO_ENV` (`production` ou `sandbox`, opcional)
+
+URL de webhook (configurar no Mercado Pago):
+
+- `https://<SEU_PROJECT_REF>.functions.supabase.co/mercadopago-webhook`
+
+## Teste grátis (7 dias)
+
+Novas contas entram em modo `trial` por 7 dias (sem cartão). Após expirar, o acesso ao `/admin` redireciona para `/admin/assinatura`.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).

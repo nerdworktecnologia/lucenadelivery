@@ -120,12 +120,19 @@ RETURNS TRIGGER AS $$
 DECLARE
   v_full_name text;
   v_avatar_url text;
+  v_tenant_name text;
+  v_slug_base text;
+  v_slug text;
   has_user_id boolean;
   has_id boolean;
   id_has_default boolean;
 BEGIN
   v_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', '');
   v_avatar_url := NEW.raw_user_meta_data->>'avatar_url';
+  v_tenant_name := COALESCE(NULLIF(v_full_name, ''), split_part(COALESCE(NEW.email, ''), '@', 1), 'Minha Loja');
+  v_slug_base := lower(regexp_replace(v_tenant_name, '[^a-z0-9]+', '-', 'g'));
+  v_slug_base := trim(both '-' from v_slug_base);
+  v_slug := v_slug_base || '-' || substring(replace(NEW.id::text, '-', ''), 1, 6);
 
   SELECT EXISTS (
     SELECT 1
@@ -181,6 +188,53 @@ BEGIN
         INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'super_admin') ON CONFLICT DO NOTHING;
       ELSE
         INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'user') ON CONFLICT DO NOTHING;
+      END IF;
+    END IF;
+  EXCEPTION WHEN others THEN
+  END;
+
+  BEGIN
+    IF EXISTS (
+      SELECT 1
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'store_settings'
+    ) THEN
+      INSERT INTO public.store_settings (user_id, store_name)
+      VALUES (NEW.id, v_tenant_name)
+      ON CONFLICT (user_id) DO NOTHING;
+    END IF;
+  EXCEPTION WHEN others THEN
+  END;
+
+  BEGIN
+    IF EXISTS (
+      SELECT 1
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'tenants'
+    ) THEN
+      IF NOT EXISTS (SELECT 1 FROM public.tenants WHERE owner_id = NEW.id) THEN
+        INSERT INTO public.tenants (owner_id, name, plan, status, monthly_revenue)
+        VALUES (NEW.id, v_tenant_name, 'starter', 'trial', 0);
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'tenants' AND column_name = 'trial_ends_at'
+      ) THEN
+        UPDATE public.tenants
+        SET trial_ends_at = COALESCE(trial_ends_at, now() + interval '7 days')
+        WHERE owner_id = NEW.id;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'tenants' AND column_name = 'slug'
+      ) THEN
+        UPDATE public.tenants
+        SET slug = COALESCE(NULLIF(slug, ''), v_slug)
+        WHERE owner_id = NEW.id;
       END IF;
     END IF;
   EXCEPTION WHEN others THEN

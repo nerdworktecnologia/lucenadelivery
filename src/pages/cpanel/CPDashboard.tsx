@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Building2, TrendingUp, DollarSign, Users, AlertTriangle, RefreshCw } from "lucide-react";
+import { Building2, TrendingUp, DollarSign, Users, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 type Tenant = {
   id: string; name: string; plan: string; status: string;
@@ -43,23 +42,6 @@ export default function CPDashboard() {
   // Recent clients
   const recent = tenants.slice(0, 5);
 
-  const handleRestoreDemo = async () => {
-    toast.promise(
-      supabase.rpc("restore_demo_data").then(({ error }) => {
-        if (error) throw error;
-        return true;
-      }),
-      {
-        loading: 'Restaurando dados de demonstração...',
-        success: () => {
-          setTimeout(() => window.location.reload(), 1500);
-          return 'Dados restaurados com sucesso! Reiniciando...';
-        },
-        error: (err) => `Erro ao restaurar: ${err.message}`
-      }
-    );
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -67,15 +49,6 @@ export default function CPDashboard() {
           <h1 className="text-2xl font-bold font-['Space_Grotesk'] text-foreground">📊 Painel LucenaDelivery</h1>
           <p className="text-sm text-muted-foreground">Gestão de assinantes e receita</p>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="gap-2 border-primary/20 hover:bg-primary/5"
-          onClick={handleRestoreDemo}
-        >
-          <RefreshCw className="h-4 w-4" />
-          Restaurar Demo
-        </Button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

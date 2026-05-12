@@ -72,7 +72,12 @@ const PBMenu = () => {
 
   useEffect(() => {
     const fetchMenu = async () => {
-      const menuSlug = slug || "tempero-de-maria";
+      if (!slug) {
+        setNotFound(true);
+        setLoadingData(false);
+        return;
+      }
+      const menuSlug = slug;
 
       // 1. Get tenant by slug
       const { data: tenant, error: tErr } = await supabase
@@ -142,8 +147,8 @@ const PBMenu = () => {
     if (!checkoutForm.name || !checkoutForm.phone) { toast.error("Preencha nome e telefone"); return; }
     if (deliveryType === "entrega" && !checkoutForm.address) { toast.error("Preencha o endereço de entrega"); return; }
 
-    const menuSlug = slug || "tempero-de-maria";
-    const { data: tenant } = await supabase.from("tenants").select("id, name, owner_id").eq("slug", menuSlug).single();
+    if (!slug) return;
+    const { data: tenant } = await supabase.from("tenants").select("id, name, owner_id").eq("slug", slug).single();
     if (!tenant) return;
 
     // Get next order number
