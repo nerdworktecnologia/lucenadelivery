@@ -183,7 +183,7 @@ const testimonials = [
 const faqs = [
   { q: "Preciso instalar algum aplicativo?", a: "Não! O LucenaDelivery funciona 100% no navegador. Seus clientes também não precisam baixar nada para fazer pedidos." },
   { q: "Como funciona o bot do WhatsApp?", a: "Nosso bot responde automaticamente as mensagens dos clientes, envia o cardápio e registra os pedidos no seu painel. Tudo sem você precisar digitar." },
-  { q: "Posso testar antes de assinar?", a: "Sim! Oferecemos 14 dias grátis em qualquer plano, sem compromisso e sem cartão de crédito." },
+  { q: "Posso testar antes de assinar?", a: "Sim! Oferecemos 7 dias grátis em qualquer plano, sem compromisso e sem cartão de crédito." },
   { q: "Funciona para qualquer tipo de restaurante?", a: "Sim! Restaurantes, lanchonetes, pizzarias, confeitarias, cafés, food trucks e qualquer negócio de alimentação." },
   { q: "Meus dados ficam seguros?", a: "Totalmente! Usamos criptografia de ponta e servidores seguros. Seus dados e os dos seus clientes estão protegidos." },
   { q: "Consigo cancelar a qualquer momento?", a: "Sim, sem multa e sem burocracia. Você pode cancelar direto pelo painel." },
@@ -255,7 +255,7 @@ const LandingPage = () => {
           >
             <motion.div custom={0} variants={fadeUp}>
               <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium rounded-full">
-                🚀 14 dias grátis • Sem cartão de crédito
+                🚀 7 dias grátis • Sem cartão de crédito
               </Badge>
             </motion.div>
             <motion.h1
