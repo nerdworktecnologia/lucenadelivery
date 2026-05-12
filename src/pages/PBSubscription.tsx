@@ -45,13 +45,23 @@ export default function PBSubscription() {
       if (!user) return;
       setLoading(true);
       const ownerId = (user.user_metadata as { owner_id?: string } | null)?.owner_id || user.id;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("tenants")
         .select("id, owner_id, plan, status, trial_ends_at, billing_status")
         .eq("owner_id", ownerId)
         .limit(1)
         .maybeSingle();
-      setTenant((data as TenantRow) || null);
+      if (error) {
+        const { data: fallback } = await supabase
+          .from("tenants")
+          .select("id, owner_id, plan, status")
+          .eq("owner_id", ownerId)
+          .limit(1)
+          .maybeSingle();
+        setTenant((fallback as TenantRow) || null);
+      } else {
+        setTenant((data as TenantRow) || null);
+      }
       setLoading(false);
     };
     load();
@@ -60,8 +70,13 @@ export default function PBSubscription() {
   const provisionTenant = async () => {
     setProvisioning(true);
     const { data, error } = await supabase.functions.invoke("provision-tenant", { body: {} });
-    if (error || data?.error) {
-      toast.error(data?.error || "Erro ao criar loja");
+    if (error) {
+      toast.error(error.message || "Erro ao criar loja");
+      setProvisioning(false);
+      return;
+    }
+    if (data?.error) {
+      toast.error(String(data.error));
       setProvisioning(false);
       return;
     }

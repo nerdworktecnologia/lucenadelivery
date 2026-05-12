@@ -17,13 +17,25 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+    const missing = [
+      !supabaseUrl ? "SUPABASE_URL" : null,
+      !serviceRoleKey ? "SUPABASE_SERVICE_ROLE_KEY" : null,
+      !anonKey ? "SUPABASE_ANON_KEY" : null,
+    ].filter(Boolean);
+    if (missing.length) {
+      return new Response(JSON.stringify({ error: `Secrets ausentes no Supabase: ${missing.join(", ")}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const authHeader = req.headers.get("Authorization") || "";
 
-    const callerClient = createClient(supabaseUrl, anonKey, {
+    const callerClient = createClient(supabaseUrl!, anonKey!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user } } = await callerClient.auth.getUser();
@@ -34,7 +46,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    const supabaseAdmin = createClient(supabaseUrl!, serviceRoleKey!);
 
     const fullName =
       (user.user_metadata as { full_name?: string; name?: string } | null)?.full_name ||
@@ -45,13 +57,22 @@ Deno.serve(async (req) => {
     const slugBase = slugify(tenantName);
     const slug = `${slugBase}-${user.id.replace(/-/g, "").slice(0, 6)}`;
 
-    const { data: existingTenant, error: existingErr } = await supabaseAdmin
+    const existingWithSlug = await supabaseAdmin
       .from("tenants")
       .select("id, slug")
       .eq("owner_id", user.id)
       .limit(1)
       .maybeSingle();
-    if (existingErr) throw existingErr;
+
+    const existingNoSlug = await supabaseAdmin
+      .from("tenants")
+      .select("id")
+      .eq("owner_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    const existingTenant = existingWithSlug.error ? existingNoSlug.data : existingWithSlug.data;
+    if (existingWithSlug.error && existingNoSlug.error) throw existingNoSlug.error;
 
     if (!existingTenant) {
       const basePayload: Record<string, unknown> = {
@@ -82,7 +103,7 @@ Deno.serve(async (req) => {
       if (!inserted && lastError) throw lastError;
     } else {
       const updatePayload: Record<string, unknown> = {};
-      if (!existingTenant.slug) updatePayload.slug = slug;
+      if ((existingTenant as { slug?: string | null })?.slug === null || (existingTenant as { slug?: string | null })?.slug === undefined) updatePayload.slug = slug;
       if (Object.keys(updatePayload).length) {
         await supabaseAdmin.from("tenants").update(updatePayload).eq("id", existingTenant.id);
       }
