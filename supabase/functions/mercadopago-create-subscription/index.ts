@@ -99,11 +99,13 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
     const backUrl = origin ? `${origin}/admin/assinatura?billing=success` : undefined;
+    const notificationUrl = `${supabaseUrl}/functions/v1/mercadopago-webhook`;
 
     const body = {
       reason: `Assinatura LucenaDelivery — ${pricing.label}`,
       payer_email: user.email,
       back_url: backUrl,
+      notification_url: notificationUrl,
       external_reference: `${tenant.id}:${planId}`,
       auto_recurring: {
         frequency: 1,
