@@ -95,7 +95,11 @@ export default function PBSubscription() {
       body: { plan },
     });
     if (error || data?.error) {
-      toast.error(data?.error || "Erro ao iniciar assinatura");
+      const message =
+        (data?.error ? String(data.error) : null) ||
+        error?.message ||
+        "Erro ao iniciar assinatura";
+      toast.error(message);
       setStarting(null);
       return;
     }

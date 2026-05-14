@@ -24,19 +24,21 @@ export function useUserRole() {
 
     const check = async () => {
       try {
-        // Fetch the user's role from user_roles table
         const { data, error } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
+          .limit(20);
 
         if (error) throw error;
 
-        const userRole = (data?.role as AppRole) || null;
-        setRole(userRole);
-        setIsSuperAdmin(userRole === "super_admin");
+        const roles = ((data || []) as Array<{ role: AppRole }>).map((r) => r.role);
+        const hasSuperAdmin = roles.includes("super_admin");
+        const hasAdmin = roles.includes("admin");
+        const resolvedRole: AppRole | null = hasSuperAdmin ? "super_admin" : hasAdmin ? "admin" : roles[0] || null;
+
+        setRole(resolvedRole);
+        setIsSuperAdmin(hasSuperAdmin);
       } catch (err) {
         console.error("Error checking user role:", err);
       } finally {

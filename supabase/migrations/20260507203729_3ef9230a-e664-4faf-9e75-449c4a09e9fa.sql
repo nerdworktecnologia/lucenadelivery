@@ -1,15 +1,22 @@
 -- Fix SECURITY DEFINER functions access
 -- has_role: Should be callable by authenticated users
 -- Correct arguments are (_user_id uuid, _role app_role)
-REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
+DO $$
+BEGIN
+  IF to_regprocedure('public.has_role(uuid,public.app_role)') IS NOT NULL THEN
+    EXECUTE 'REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated';
+  END IF;
 
--- restore_demo_data: Revoke from public, allow only authenticated
-REVOKE EXECUTE ON FUNCTION public.restore_demo_data() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.restore_demo_data() TO authenticated;
+  IF to_regprocedure('public.restore_demo_data()') IS NOT NULL THEN
+    EXECUTE 'REVOKE EXECUTE ON FUNCTION public.restore_demo_data() FROM PUBLIC';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.restore_demo_data() TO authenticated';
+  END IF;
 
--- handle_new_user: Revoke from public
-REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC;
+  IF to_regprocedure('public.handle_new_user()') IS NOT NULL THEN
+    EXECUTE 'REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC';
+  END IF;
+END $$;
 
 -- Fix Permissive RLS policies for tenants
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;

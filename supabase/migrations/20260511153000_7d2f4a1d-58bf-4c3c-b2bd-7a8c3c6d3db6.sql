@@ -15,26 +15,38 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DO $$
+DECLARE
+  v_col text;
 BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'user_id'
+  ) THEN
+    v_col := 'user_id';
+  ELSE
+    v_col := 'id';
+  END IF;
+
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'Profiles select'
   ) THEN
-    EXECUTE 'CREATE POLICY "Profiles select" ON public.profiles FOR SELECT USING (COALESCE(user_id, id) = auth.uid())';
+    EXECUTE format('CREATE POLICY "Profiles select" ON public.profiles FOR SELECT USING (auth.uid() = %I)', v_col);
   END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'Profiles insert'
   ) THEN
-    EXECUTE 'CREATE POLICY "Profiles insert" ON public.profiles FOR INSERT WITH CHECK (COALESCE(user_id, id) = auth.uid())';
+    EXECUTE format('CREATE POLICY "Profiles insert" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = %I)', v_col);
   END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'Profiles update'
   ) THEN
-    EXECUTE 'CREATE POLICY "Profiles update" ON public.profiles FOR UPDATE USING (COALESCE(user_id, id) = auth.uid())';
+    EXECUTE format('CREATE POLICY "Profiles update" ON public.profiles FOR UPDATE USING (auth.uid() = %I)', v_col);
   END IF;
 END $$;
 

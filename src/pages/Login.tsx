@@ -66,14 +66,14 @@ const Login = () => {
       let isSuperAdmin = !!roleData;
 
       if (roleError) {
-        const { data: userRoleData } = await supabase
+        const { data: userRoleRows } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", session.user.id)
-          .limit(1)
-          .maybeSingle();
+          .limit(20);
 
-        isSuperAdmin = userRoleData?.role === "super_admin";
+        const roles = ((userRoleRows || []) as Array<{ role: AppRole }>).map((r) => r.role);
+        isSuperAdmin = roles.includes("super_admin");
       }
 
       if (isSuperAdmin) {

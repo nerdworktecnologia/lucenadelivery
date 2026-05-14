@@ -17,15 +17,28 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     const mpEnv = (Deno.env.get("MERCADOPAGO_ENV") || "production").toLowerCase();
+
+    const missing = [
+      !supabaseUrl ? "SUPABASE_URL" : null,
+      !serviceRoleKey ? "SUPABASE_SERVICE_ROLE_KEY" : null,
+      !anonKey ? "SUPABASE_ANON_KEY" : null,
+      !mpAccessToken ? "MERCADOPAGO_ACCESS_TOKEN" : null,
+    ].filter(Boolean);
+    if (missing.length) {
+      return new Response(JSON.stringify({ error: `Secrets ausentes no Supabase: ${missing.join(", ")}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const authHeader = req.headers.get("Authorization") || "";
 
-    const callerClient = createClient(supabaseUrl, anonKey, {
+    const callerClient = createClient(supabaseUrl!, anonKey!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user } } = await callerClient.auth.getUser();
@@ -46,7 +59,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    const supabaseAdmin = createClient(supabaseUrl!, serviceRoleKey!);
 
     const tenantQuery = supabaseAdmin
       .from("tenants")
@@ -85,7 +98,7 @@ Deno.serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
-    const backUrl = origin ? `${origin}/admin/config?billing=success` : undefined;
+    const backUrl = origin ? `${origin}/admin/assinatura?billing=success` : undefined;
 
     const body = {
       reason: `Assinatura LucenaDelivery — ${pricing.label}`,
@@ -110,8 +123,8 @@ Deno.serve(async (req) => {
     });
     const mpJson = await mpRes.json().catch(() => ({}));
     if (!mpRes.ok) {
-      return new Response(JSON.stringify({ error: "Erro ao criar assinatura no Mercado Pago", details: mpJson }), {
-        status: 400,
+      return new Response(JSON.stringify({ error: "Erro ao criar assinatura no Mercado Pago", details: mpJson, status: mpRes.status }), {
+        status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

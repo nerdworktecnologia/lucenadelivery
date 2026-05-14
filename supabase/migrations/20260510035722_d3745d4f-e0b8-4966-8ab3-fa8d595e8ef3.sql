@@ -33,10 +33,22 @@ USING (public.has_role(auth.uid(), 'super_admin'::public.app_role))
 WITH CHECK (public.has_role(auth.uid(), 'super_admin'::public.app_role));
 
 -- Also fix profiles policies to be consistent (use user_id instead of id for auth.uid() check)
-DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
-CREATE POLICY "Users can update own profile"
-ON public.profiles
-FOR UPDATE
-TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'profiles'
+  ) THEN
+    EXECUTE 'DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles';
+    IF EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'user_id'
+    ) THEN
+      EXECUTE 'CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)';
+    ELSE
+      EXECUTE 'CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id)';
+    END IF;
+  END IF;
+END $$;
