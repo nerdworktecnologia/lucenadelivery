@@ -30,6 +30,7 @@ type UserProfile = {
   full_name: string;
   email?: string;
   role?: string;
+  roles?: string[];
   company_name?: string;
   created_at: string;
   has_kitchen_access?: boolean;
@@ -58,35 +59,43 @@ export default function CPUsers() {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [newRole, setNewRole] = useState<string>("");
   const [updatingRole, setUpdatingRole] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createFullName, setCreateFullName] = useState("");
+  const [createEmail, setCreateEmail] = useState("");
+  const [createCompanyName, setCreateCompanyName] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
+  const [createRole, setCreateRole] = useState<string>("user");
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const { data: profiles, error: pError } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.functions.invoke("cpanel-manage-users", {
+        body: { action: "list", page: 1, perPage: 200 },
+      });
+      if (error || data?.error) throw new Error((data?.error as string) || error?.message || "Falha ao carregar usuários");
 
-      if (pError) throw pError;
-
-      const { data: roles, error: rError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
-      if (rError) throw rError;
-
-      const merged = profiles.map(p => {
-        const role = roles.find(r => r.user_id === p.user_id)?.role || "user";
+      const list = (data as Array<{ user_id: string; email: string | null; full_name: string | null; company_name: string | null; created_at: string; roles: string[] }>).map((u) => {
+        const roles = u.roles || [];
+        const hasKitchen = roles.includes("cozinha") || roles.includes("super_admin") || roles.includes("admin");
+        const hasStore = roles.includes("super_admin") || roles.includes("admin");
+        const primaryRole = roles.includes("super_admin") ? "super_admin" : roles.includes("admin") ? "admin" : roles[0] || "user";
         return {
-          ...p,
-          role,
-          // Mocking permissions based on roles for UI demonstration as requested
-          has_kitchen_access: role === "cozinha" || role === "super_admin" || role === "admin",
-          has_store_access: role === "admin" || role === "super_admin"
-        };
+          id: u.user_id,
+          user_id: u.user_id,
+          email: u.email || undefined,
+          full_name: u.full_name || "Sem nome",
+          company_name: u.company_name || undefined,
+          created_at: u.created_at,
+          roles,
+          role: primaryRole,
+          has_kitchen_access: hasKitchen,
+          has_store_access: hasStore,
+        } satisfies UserProfile;
       });
 
-      setUsers(merged as UserProfile[]);
+      setUsers(list);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       toast.error("Erro ao carregar usuários: " + message);
@@ -104,24 +113,10 @@ export default function CPUsers() {
     
     setUpdatingRole(true);
     try {
-      // Logic to update role
-      // 1. Remove existing roles
-      await supabase.from("user_roles").delete().eq("user_id", selectedUser.user_id);
-      
-      // 2. Insert new role
-      const { error } = await supabase.from("user_roles").insert({
-        user_id: selectedUser.user_id,
-        role: newRole
+      const { data, error } = await supabase.functions.invoke("cpanel-manage-users", {
+        body: { action: "set_role", user_id: selectedUser.user_id, role: newRole },
       });
-
-      if (error) throw error;
-
-      // 3. Log action
-      await supabase.rpc("log_admin_action", {
-        _action_type: "UPDATE_ROLE",
-        _target_id: selectedUser.user_id,
-        _details: { old_role: selectedUser.role, new_role: newRole, reason: "Alteração manual via painel admin" }
-      });
+      if (error || data?.error) throw new Error((data?.error as string) || error?.message || "Falha ao atualizar cargo");
 
       toast.success(`Cargo de ${selectedUser.full_name} atualizado para ${newRole}`);
       setIsRoleModalOpen(false);
@@ -134,9 +129,61 @@ export default function CPUsers() {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!createEmail || !createPassword) {
+      toast.error("Email e senha são obrigatórios");
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cpanel-manage-users", {
+        body: {
+          action: "create",
+          email: createEmail,
+          password: createPassword,
+          full_name: createFullName,
+          company_name: createCompanyName,
+          role: createRole,
+        },
+      });
+      if (error || data?.error) throw new Error((data?.error as string) || error?.message || "Falha ao criar usuário");
+
+      toast.success("Usuário criado com sucesso");
+      setIsCreateOpen(false);
+      setCreateFullName("");
+      setCreateEmail("");
+      setCreateCompanyName("");
+      setCreatePassword("");
+      setCreateRole("user");
+      loadUsers();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao criar usuário: " + message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    setDeletingUserId(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke("cpanel-manage-users", {
+        body: { action: "delete", user_id: userId },
+      });
+      if (error || data?.error) throw new Error((data?.error as string) || error?.message || "Falha ao excluir usuário");
+      toast.success("Usuário excluído");
+      loadUsers();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao excluir usuário: " + message);
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   const filteredAndSortedUsers = users
     .filter(u => {
-      const matchesSearch = (u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.user_id.includes(search));
+      const matchesSearch = (u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.user_id.includes(search) || u.email?.toLowerCase().includes(search.toLowerCase()));
       const matchesRole = roleFilter === "all" || u.role === roleFilter;
       
       let matchesPermission = true;
@@ -221,6 +268,9 @@ export default function CPUsers() {
           <p className="text-sm text-muted-foreground">Controle de acessos, permissões e auditoria</p>
         </div>
         <div className="flex items-center gap-2">
+            <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-2">
+              + Novo Usuário
+            </Button>
             <Button variant="outline" size="sm" onClick={() => exportCSV(true)} className="gap-2">
               <FileDown className="h-4 w-4" /> Exportar Filtrados
             </Button>
@@ -308,6 +358,7 @@ export default function CPUsers() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">{user.full_name || "Sem nome"}</h3>
+                    {user.email && <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>}
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
                       <span className="flex items-center gap-1">
                         <Shield className="h-3 w-3" /> {getRoleBadge(user.role)}
@@ -339,6 +390,15 @@ export default function CPUsers() {
                     setIsRoleModalOpen(true);
                   }}>
                     <UserCheck className="h-3.5 w-3.5" /> Alterar Cargo
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1 text-destructive hover:text-destructive"
+                    disabled={deletingUserId === user.user_id}
+                    onClick={() => handleDeleteUser(user.user_id)}
+                  >
+                    {deletingUserId === user.user_id ? "Excluindo..." : "Excluir"}
                   </Button>
                 </div>
               </div>
@@ -450,6 +510,58 @@ export default function CPUsers() {
             <Button variant="outline" onClick={() => setIsRoleModalOpen(false)}>Cancelar</Button>
             <Button onClick={handleUpdateRole} disabled={updatingRole}>
               {updatingRole ? "Salvando..." : "Confirmar Alteração"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Modal */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Usuário</DialogTitle>
+            <DialogDescription>
+              Cria um usuário no Supabase Auth e define o cargo inicial.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nome</label>
+              <Input value={createFullName} onChange={(e) => setCreateFullName(e.target.value)} placeholder="Nome completo" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
+              <Input value={createEmail} onChange={(e) => setCreateEmail(e.target.value)} placeholder="email@dominio.com" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Empresa</label>
+              <Input value={createCompanyName} onChange={(e) => setCreateCompanyName(e.target.value)} placeholder="Nome do restaurante/empresa" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Senha</label>
+              <Input type="password" value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} placeholder="Senha" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Cargo</label>
+              <Select value={createRole} onValueChange={setCreateRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolha um cargo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="super_admin">Super Admin</SelectItem>
+                  <SelectItem value="admin">Admin (Lojista)</SelectItem>
+                  <SelectItem value="cozinha">Cozinha</SelectItem>
+                  <SelectItem value="pedidos">Pedidos</SelectItem>
+                  <SelectItem value="entrega">Entrega</SelectItem>
+                  <SelectItem value="user">Cliente (User)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateUser} disabled={creating}>
+              {creating ? "Criando..." : "Criar"}
             </Button>
           </DialogFooter>
         </DialogContent>
