@@ -2,13 +2,31 @@
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL ||
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createBrowserClient<Database>(
-  SUPABASE_URL, 
-  SUPABASE_PUBLISHABLE_KEY
-);
+export const supabase =
+  SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
+    ? createBrowserClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+    : (new Proxy(
+        {},
+        {
+          get() {
+            throw new Error(
+              "Supabase URL and API key are required. Configure VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_*)."
+            );
+          },
+        }
+      ) as unknown as ReturnType<typeof createBrowserClient<Database>>);

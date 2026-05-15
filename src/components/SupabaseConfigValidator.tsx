@@ -16,9 +16,14 @@ export const SupabaseConfigValidator = ({ children }: { children: React.ReactNod
   });
 
   useEffect(() => {
-    const url = import.meta.env.VITE_SUPABASE_URL;
-    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    const expectedProjectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || null;
+    const url = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL) as
+      | string
+      | undefined;
+    const key = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      import.meta.env.VITE_SUPABASE_ANON_KEY ||
+      import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as string | undefined;
+    const expectedProjectId = (import.meta.env.VITE_SUPABASE_PROJECT_ID || null) as string | null;
 
     if (!url || !key) {
       setIsValid(false);
@@ -47,7 +52,13 @@ export const SupabaseConfigValidator = ({ children }: { children: React.ReactNod
               ? "As chaves do Supabase não foram encontradas nas variáveis de ambiente."
               : `O app está tentando se conectar a um projeto Supabase diferente do esperado (${projectInfo.expected ?? "não definido"}). Isso pode causar falhas na autenticação e no banco de dados.`}
             <div className="mt-4 text-sm opacity-90">
-              Verifique <code className="bg-destructive-foreground/20 px-1 rounded">{".env"}</code> (ou as variáveis do ambiente do deploy) para <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_URL"}</code>, <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_PUBLISHABLE_KEY"}</code> e, se aplicável, <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_PROJECT_ID"}</code>.
+              Verifique <code className="bg-destructive-foreground/20 px-1 rounded">{".env"}</code> (ou as variáveis do ambiente do deploy) para{" "}
+              <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_URL"}</code>{" "}
+              (ou <code className="bg-destructive-foreground/20 px-1 rounded">{"NEXT_PUBLIC_SUPABASE_URL"}</code>),{" "}
+              <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_PUBLISHABLE_KEY"}</code>{" "}
+              (ou <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_ANON_KEY"}</code> /{" "}
+              <code className="bg-destructive-foreground/20 px-1 rounded">{"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"}</code>), e, se aplicável,{" "}
+              <code className="bg-destructive-foreground/20 px-1 rounded">{"VITE_SUPABASE_PROJECT_ID"}</code>.
               {projectInfo.current ? (
                 <div className="mt-2">
                   Projeto detectado na URL: <code className="bg-destructive-foreground/20 px-1 rounded">{projectInfo.current}</code>
