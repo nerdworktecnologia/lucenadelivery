@@ -31,12 +31,14 @@ const Signup = () => {
     }
     setLoading(true);
 
+    const emailRedirectTo = import.meta.env.VITE_AUTH_REDIRECT_URL as string | undefined;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: window.location.origin,
+        ...(emailRedirectTo ? { emailRedirectTo } : {}),
       },
     });
 

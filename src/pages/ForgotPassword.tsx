@@ -18,9 +18,14 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const redirectTo = import.meta.env.VITE_AUTH_REDIRECT_URL
+      ? `${import.meta.env.VITE_AUTH_REDIRECT_URL}/reset-password`
+      : undefined;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo ? { redirectTo } : undefined
+    );
 
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
