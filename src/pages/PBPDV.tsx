@@ -538,7 +538,7 @@ export default function PBPDV() {
             <>
               <div id="receipt-content" className="space-y-2 text-sm font-mono">
                 <div className="text-center">
-                  <p className="font-bold text-base">LucenaDelivery</p>
+                  <p className="font-bold text-base">BrandDelivery</p>
                   <p className="text-xs text-muted-foreground">Comanda de Pedido</p>
                 </div>
                 <Separator className="border-dashed" />

@@ -80,7 +80,7 @@ const Login = () => {
         toast({ title: "Login realizado", description: "Bem-vindo ao Painel Super Admin" });
         navigate("/cpanel");
       } else {
-        toast({ title: "Login realizado", description: "Bem-vindo ao LucenaDelivery" });
+        toast({ title: "Login realizado", description: "Bem-vindo ao BrandDelivery" });
         navigate("/admin");
       }
     }
@@ -95,7 +95,7 @@ const Login = () => {
             <FileText className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            LucenaDelivery
+            BrandDelivery
           </span>
         </div>
 

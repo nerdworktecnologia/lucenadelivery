@@ -5,8 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
-import { Copy, ExternalLink, Store, Clock, Link2, Palette, MessageCircle, Zap, Printer, CreditCard } from "lucide-react";
+import { Copy, ExternalLink, Store, Clock, Link2, Palette, MessageCircle, Zap, Printer } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 
@@ -39,16 +38,6 @@ const PBSettings = () => {
             <div><Label>Pedido Mínimo (R$)</Label><Input type="number" value={settings.min_order} onChange={(e) => setSettings({ ...settings, min_order: Number(e.target.value) })} /></div>
             <div><Label>Preparo (min)</Label><Input type="number" value={settings.prep_time} onChange={(e) => setSettings({ ...settings, prep_time: Number(e.target.value) })} /></div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4 sm:p-5 space-y-3">
-          <h3 className="font-semibold text-foreground flex items-center gap-2 text-sm sm:text-base"><CreditCard className="h-4 w-4 text-primary" /> Assinatura</h3>
-          <p className="text-xs sm:text-sm text-muted-foreground">Teste 7 dias grátis. Depois do teste, ative a assinatura pelo Mercado Pago.</p>
-          <Link to="/admin/assinatura">
-            <Button variant="outline" className="w-full sm:w-auto">Ver planos</Button>
-          </Link>
         </CardContent>
       </Card>
 

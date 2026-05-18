@@ -138,30 +138,6 @@ function CountUpStat({ label, numValue, prefix, suffix, icon, trend, decimals = 
   );
 }
 
-const plans = [
-  {
-    name: "Starter",
-    price: "49",
-    description: "Para quem está começando",
-    features: ["Até 100 pedidos/mês", "Cardápio digital", "1 usuário", "Suporte por e-mail"],
-    popular: false,
-  },
-  {
-    name: "Profissional",
-    price: "99",
-    description: "O mais escolhido!",
-    features: ["Pedidos ilimitados", "WhatsApp Bot", "PDV completo", "Cozinha em tempo real", "3 usuários", "Suporte prioritário"],
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "199",
-    description: "Para operações maiores",
-    features: ["Tudo do Profissional", "Multi-lojas", "API personalizada", "Usuários ilimitados", "Relatórios avançados", "Suporte dedicado"],
-    popular: false,
-  },
-];
-
 const features = [
   { icon: Smartphone, title: "Cardápio Digital", desc: "Link compartilhável com QR Code. Seus clientes pedem direto do celular, sem app.", metric: "3x mais pedidos", tag: "Mais usado" },
   { icon: MessageCircle, title: "WhatsApp Bot", desc: "Receba e gerencie pedidos automaticamente pelo WhatsApp, 24h por dia.", metric: "80% menos tempo", tag: "Automação" },
@@ -181,7 +157,7 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: "Preciso instalar algum aplicativo?", a: "Não! O LucenaDelivery funciona 100% no navegador. Seus clientes também não precisam baixar nada para fazer pedidos." },
+  { q: "Preciso instalar algum aplicativo?", a: "Não! O BrandDelivery funciona 100% no navegador. Seus clientes também não precisam baixar nada para fazer pedidos." },
   { q: "Como funciona o bot do WhatsApp?", a: "Nosso bot responde automaticamente as mensagens dos clientes, envia o cardápio e registra os pedidos no seu painel. Tudo sem você precisar digitar." },
   { q: "Posso testar antes de assinar?", a: "Sim! Oferecemos 7 dias grátis em qualquer plano, sem compromisso e sem cartão de crédito." },
   { q: "Funciona para qualquer tipo de restaurante?", a: "Sim! Restaurantes, lanchonetes, pizzarias, confeitarias, cafés, food trucks e qualquer negócio de alimentação." },
@@ -207,11 +183,10 @@ const LandingPage = () => {
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
               <Zap className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-xl font-['Space_Grotesk']">LucenaDelivery</span>
+            <span className="font-bold text-xl font-['Space_Grotesk']">BrandDelivery</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Funcionalidades</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Preços</a>
             <a href="#testimonials" className="hover:text-foreground transition-colors">Depoimentos</a>
             <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
           </div>
@@ -412,7 +387,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-14">
             <motion.h2 custom={0} variants={fadeUp} className="text-3xl md:text-4xl font-bold font-['Space_Grotesk']">
-              Antes vs <span className="text-primary">Depois</span> do LucenaDelivery 🔄
+              Antes vs <span className="text-primary">Depois</span> do BrandDelivery 🔄
             </motion.h2>
             <motion.p custom={1} variants={fadeUp} className="mt-3 text-muted-foreground max-w-xl mx-auto">
               Veja a transformação real de quem adotou nossa plataforma
@@ -434,7 +409,7 @@ const LandingPage = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg font-['Space_Grotesk'] text-destructive">Antes</h3>
-                      <p className="text-xs text-muted-foreground">Sem LucenaDelivery</p>
+                      <p className="text-xs text-muted-foreground">Sem BrandDelivery</p>
                     </div>
                   </div>
                   <ul className="space-y-4">
@@ -483,7 +458,7 @@ const LandingPage = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg font-['Space_Grotesk'] text-primary">Depois</h3>
-                      <p className="text-xs text-muted-foreground">Com LucenaDelivery</p>
+                      <p className="text-xs text-muted-foreground">Com BrandDelivery</p>
                     </div>
                   </div>
                   <ul className="space-y-4">
@@ -619,61 +594,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-20 md:py-28 bg-secondary/30">
-        <div className="max-w-6xl mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-14">
-            <motion.h2 custom={0} variants={fadeUp} className="text-3xl md:text-4xl font-bold font-['Space_Grotesk']">
-              Planos que <span className="text-primary">cabem no bolso</span> 💰
-            </motion.h2>
-            <motion.p custom={1} variants={fadeUp} className="mt-3 text-muted-foreground">
-              Comece grátis e escale conforme seu negócio cresce
-            </motion.p>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {plans.map((plan, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-              >
-                <Card className={`h-full relative overflow-hidden ${plan.popular ? "border-primary shadow-lg shadow-primary/10 scale-105" : "border-border/50"}`}>
-                  {plan.popular && (
-                    <div className="absolute top-0 right-0">
-                      <Badge className="rounded-none rounded-bl-lg px-3 py-1">⭐ Popular</Badge>
-                    </div>
-                  )}
-                  <CardContent className="p-6">
-                    <h3 className="font-bold text-lg font-['Space_Grotesk']">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-                    <div className="mb-6">
-                      <span className="text-4xl font-extrabold font-['Space_Grotesk']">R$ {plan.price}</span>
-                      <span className="text-muted-foreground text-sm">/mês</span>
-                    </div>
-                    <ul className="space-y-2.5 mb-6">
-                      {plan.features.map((f, j) => (
-                        <li key={j} className="flex items-center gap-2 text-sm">
-                          <Check className="h-4 w-4 text-primary shrink-0" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link to="/signup">
-                      <Button className={`w-full rounded-full ${plan.popular ? "" : "variant-outline"}`} variant={plan.popular ? "default" : "outline"}>
-                        Começar grátis
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Testimonials */}
       <section id="testimonials" className="py-20 md:py-28">
         <div className="max-w-6xl mx-auto px-4">
@@ -682,7 +602,7 @@ const LandingPage = () => {
               Quem usa, <span className="text-primary">recomenda</span> 💬
             </motion.h2>
             <motion.p custom={1} variants={fadeUp} className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Veja como o LucenaDelivery está transformando restaurantes por todo o Brasil
+              Veja como o BrandDelivery está transformando restaurantes por todo o Brasil
             </motion.p>
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -798,7 +718,7 @@ const LandingPage = () => {
               Pronto para <span className="text-primary">simplificar</span> seu restaurante? 🚀
             </motion.h2>
             <motion.p custom={1} variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-              Junte-se a mais de 2.000 restaurantes que já usam o LucenaDelivery
+              Junte-se a mais de 2.000 restaurantes que já usam o BrandDelivery
             </motion.p>
             <motion.div custom={2} variants={fadeUp} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link to="/signup">
@@ -849,9 +769,9 @@ function InstallBanner() {
         className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-6 md:max-w-sm"
       >
         <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-xl">
-          <img src="/pwa-icon-192.png" alt="LucenaDelivery" className="w-12 h-12 rounded-xl flex-shrink-0" />
+          <img src="/pwa-icon-192.png" alt="BrandDelivery" className="w-12 h-12 rounded-xl flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Instale o LucenaDelivery</p>
+            <p className="text-sm font-semibold text-foreground">Instale o BrandDelivery</p>
             <p className="text-xs text-muted-foreground truncate">Acesso rápido direto do celular</p>
           </div>
           <Link to="/install">

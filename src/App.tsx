@@ -38,7 +38,6 @@ import PBSubscription from "./pages/PBSubscription";
 import CPanelLayout from "./components/CPanelLayout";
 import CPDashboard from "./pages/cpanel/CPDashboard";
 import CPEmpresas from "./pages/cpanel/CPEmpresas";
-import CPPlanos from "./pages/cpanel/CPPlanos";
 import CPComunicacao from "./pages/cpanel/CPComunicacao";
 import CPUsers from "./pages/cpanel/CPUsers";
 import CPAuditLogs from "./pages/cpanel/CPAuditLogs";
@@ -121,7 +120,6 @@ const App = () => (
               <Route path="/cpanel" element={<AdminRoute><CPanelLayout /></AdminRoute>}>
                 <Route index element={<CPDashboard />} />
                 <Route path="empresas" element={<CPEmpresas />} />
-                <Route path="planos" element={<CPPlanos />} />
                 <Route path="usuarios" element={<CPUsers />} />
                 <Route path="auditoria" element={<CPAuditLogs />} />
                 <Route path="comunicacao" element={<CPComunicacao />} />

@@ -15,7 +15,7 @@ const Dashboard = () => {
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              LucenaDelivery
+              BrandDelivery
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -29,7 +29,7 @@ const Dashboard = () => {
 
       <div className="max-w-6xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          Bem-vindo ao LucenaDelivery! 👋
+          Bem-vindo ao BrandDelivery! 👋
         </h1>
         <p className="text-muted-foreground mb-8">Gerencie suas notas fiscais de forma simples e rápida.</p>
 

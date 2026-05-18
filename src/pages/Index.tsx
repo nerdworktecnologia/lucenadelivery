@@ -28,12 +28,11 @@ const Index = () => {
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              LucenaDelivery
+              BrandDelivery
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#recursos" className="hover:text-primary transition-colors">Recursos</a>
-            <a href="#precos" className="hover:text-primary transition-colors">Preços</a>
             <a href="#depoimentos" className="hover:text-primary transition-colors">Depoimentos</a>
             <a href="#faq" className="hover:text-primary transition-colors">FAQ</a>
           </div>
@@ -239,85 +238,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="precos" className="py-24 px-6 bg-card/30">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <p className="text-primary font-medium tracking-widest uppercase text-sm mb-3">Planos</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              O melhor custo-benefício do mercado
-            </h2>
-            <p className="text-muted-foreground">Escolha o plano ideal para o seu negócio. Cancele quando quiser.</p>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                name: "Starter",
-                price: "49",
-                desc: "Ideal para MEI e autônomos",
-                features: ["Até 50 notas/mês", "NF-e e NFS-e", "1 CNPJ", "Suporte por email", "Relatórios básicos"],
-                popular: false,
-              },
-              {
-                name: "Profissional",
-                price: "99",
-                desc: "Para pequenas e médias empresas",
-                features: ["Notas ilimitadas", "NF-e, NFS-e e NFC-e", "Até 3 CNPJs", "Suporte prioritário", "Relatórios avançados", "API de integração"],
-                popular: true,
-              },
-              {
-                name: "Enterprise",
-                price: "199",
-                desc: "Para grandes operações",
-                features: ["Notas ilimitadas", "Todos os tipos de NF", "CNPJs ilimitados", "Suporte 24/7 dedicado", "Relatórios personalizados", "API completa", "SLA 99,99%"],
-                popular: false,
-              },
-            ].map((plan, i) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15, duration: 0.6 }}
-              >
-                <Card className={`h-full relative overflow-hidden ${plan.popular ? "border-primary shadow-lg shadow-primary/10" : "border-border/50"}`}>
-                  {plan.popular && (
-                    <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-xs font-semibold text-center py-1.5">
-                      Mais Popular
-                    </div>
-                  )}
-                  <CardContent className={`p-8 ${plan.popular ? "pt-12" : ""}`}>
-                    <h3 className="text-xl font-bold text-foreground mb-1">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-5">{plan.desc}</p>
-                    <div className="mb-6">
-                      <span className="text-4xl font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>R${plan.price}</span>
-                      <span className="text-muted-foreground text-sm">/mês</span>
-                    </div>
-                    <Button className="w-full mb-6" variant={plan.popular ? "default" : "outline"}>
-                      Começar Agora
-                    </Button>
-                    <ul className="space-y-3">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Check className="h-4 w-4 text-accent flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Testimonials */}
       <section id="depoimentos" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
@@ -335,7 +255,7 @@ const Index = () => {
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: "Roberto Almeida", role: "Contador", text: "Gerencio mais de 80 empresas pelo LucenaDelivery. A emissão em lote economiza horas do meu dia.", stars: 5 },
+              { name: "Roberto Almeida", role: "Contador", text: "Gerencio mais de 80 empresas pelo BrandDelivery. A emissão em lote economiza horas do meu dia.", stars: 5 },
               { name: "Juliana Mendes", role: "MEI - Consultoria", text: "Finalmente um sistema simples e barato. Emito minhas notas em segundos, sem precisar de contador.", stars: 5 },
               { name: "André Costa", role: "Diretor Financeiro", text: "A integração via API com nosso ERP foi perfeita. Suporte excelente e sistema muito estável.", stars: 5 },
             ].map((t, i) => (

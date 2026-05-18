@@ -43,7 +43,7 @@ export default function Install() {
           <CheckCircle2 className="h-10 w-10 text-primary" />
         </div>
         <h1 className="text-2xl font-bold text-foreground mb-2">App instalado!</h1>
-        <p className="text-muted-foreground mb-8">O LucenaDelivery já está na sua tela inicial.</p>
+        <p className="text-muted-foreground mb-8">O BrandDelivery já está na sua tela inicial.</p>
         <Link to="/">
           <Button>Voltar ao início</Button>
         </Link>
@@ -66,8 +66,8 @@ export default function Install() {
       <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto">
         {/* App Icon */}
         <div className="mb-8 text-center">
-          <img src="/pwa-icon-192.png" alt="LucenaDelivery" className="w-24 h-24 rounded-[22px] shadow-xl mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground">LucenaDelivery</h2>
+          <img src="/pwa-icon-192.png" alt="BrandDelivery" className="w-24 h-24 rounded-[22px] shadow-xl mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground">BrandDelivery</h2>
           <p className="text-sm text-muted-foreground mt-1">Comanda, gerencia, entrega</p>
         </div>
 

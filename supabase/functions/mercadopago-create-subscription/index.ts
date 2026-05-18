@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     const notificationUrl = `${supabaseUrl}/functions/v1/mercadopago-webhook`;
 
     const body = {
-      reason: `Assinatura LucenaDelivery — ${pricing.label}`,
+      reason: `Assinatura BrandDelivery — ${pricing.label}`,
       payer_email: user.email,
       back_url: backUrl,
       notification_url: notificationUrl,

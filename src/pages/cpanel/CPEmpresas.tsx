@@ -14,28 +14,18 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 type Tenant = {
-  id: string; name: string; email: string; phone: string;
-  plan: string; status: string; monthly_revenue: number;
-  orders_count: number; products_count: number; created_at: string; notes: string;
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  plan: string | null;
+  status: string;
+  monthly_revenue: number | null;
+  orders_count: number | null;
+  products_count: number | null;
+  created_at: string;
+  notes: string | null;
   slug: string | null;
-};
-
-const planLabels: Record<string, string> = {
-  starter: "Starter",
-  profissional: "Profissional",
-  enterprise: "Enterprise",
-};
-
-const planColors: Record<string, string> = {
-  starter: "bg-secondary text-secondary-foreground",
-  profissional: "bg-primary/10 text-primary",
-  enterprise: "bg-accent/20 text-accent-foreground",
-};
-
-const planPrices: Record<string, number> = {
-  starter: 97,
-  profissional: 197,
-  enterprise: 397,
 };
 
 const statusLabels: Record<string, string> = {
@@ -54,37 +44,106 @@ export default function CPEmpresas() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterPlan, setFilterPlan] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Tenant | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", plan: "starter", status: "active", monthly_revenue: 97, notes: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", plan: "enterprise", status: "active", monthly_revenue: 0, notes: "" });
+
+  // #region debug-point A:init
+  const __dbgUrl = "http://127.0.0.1:7777/event";
+  const __dbgSessionId = "cpanel-delete-client-error";
+  const __dbgRunId = "pre-fix";
+  const __dbg = (hypothesisId: string, msg: string, data: Record<string, unknown> = {}) => {
+    fetch(__dbgUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: __dbgSessionId,
+        runId: __dbgRunId,
+        hypothesisId,
+        location: "CPEmpresas.tsx",
+        msg: `[DEBUG] ${msg}`,
+        data,
+        ts: Date.now(),
+      }),
+    }).catch(() => {});
+  };
+  // #endregion
+
+  // #region debug-point B:global-errors
+  useEffect(() => {
+    const onError = (e: ErrorEvent) => {
+      __dbg("B", "window.onerror", {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno,
+        stack: (e.error as Error | undefined)?.stack,
+      });
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const reason = e.reason as unknown;
+      __dbg("B", "window.unhandledrejection", {
+        reasonType: typeof reason,
+        reason: reason instanceof Error ? reason.message : String(reason),
+        stack: reason instanceof Error ? reason.stack : undefined,
+      });
+    };
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
+  // #endregion
 
   const load = async () => {
-    const { data } = await supabase.from("tenants").select("*").order("created_at", { ascending: false });
-    if (data) setTenants(data as Tenant[]);
+    // #region debug-point C:load-start
+    __dbg("C", "load:start", { at: new Date().toISOString() });
+    // #endregion
+    const { data, error } = await supabase.from("tenants").select("*").order("created_at", { ascending: false });
+    if (error) {
+      // #region debug-point C:load-error
+      __dbg("C", "load:error", { message: error.message, details: (error as unknown as { details?: unknown }).details });
+      // #endregion
+      toast.error("Erro ao carregar lojas");
+      return;
+    }
+    if (data) {
+      // #region debug-point C:load-ok
+      const rows = data as Tenant[];
+      __dbg("C", "load:ok", {
+        count: rows.length,
+        nullEmail: rows.filter((r) => !r.email).length,
+        nullPhone: rows.filter((r) => !r.phone).length,
+        nullName: rows.filter((r) => !r.name).length,
+        invalidCreatedAt: rows.filter((r) => !r.created_at).length,
+      });
+      // #endregion
+      setTenants(rows);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", email: "", phone: "", plan: "starter", status: "active", monthly_revenue: 97, notes: "" });
+    setForm({ name: "", email: "", phone: "", plan: "enterprise", status: "active", monthly_revenue: 0, notes: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (t: Tenant) => {
     setEditing(t);
     setForm({
-      name: t.name, email: t.email, phone: t.phone,
-      plan: t.plan, status: t.status,
-      monthly_revenue: t.monthly_revenue,
-      notes: t.notes,
+      name: t.name,
+      email: t.email || "",
+      phone: t.phone || "",
+      plan: t.plan || "enterprise",
+      status: t.status,
+      monthly_revenue: Number(t.monthly_revenue || 0),
+      notes: t.notes || "",
     });
     setDialogOpen(true);
-  };
-
-  const handlePlanChange = (plan: string) => {
-    setForm({ ...form, plan, monthly_revenue: planPrices[plan] || form.monthly_revenue });
   };
 
   const save = async () => {
@@ -102,51 +161,62 @@ export default function CPEmpresas() {
     if (editing) {
       const { error } = await supabase.from("tenants").update(payload).eq("id", editing.id);
       if (error) { toast.error("Erro ao atualizar"); return; }
-      toast.success("Cliente atualizado!");
+      toast.success("Loja atualizada!");
     } else {
       const { error } = await supabase.from("tenants").insert(payload);
       if (error) { toast.error("Erro ao adicionar"); return; }
-      toast.success("Cliente adicionado!");
+      toast.success("Loja adicionada!");
     }
     setDialogOpen(false);
     load();
   };
 
   const handleDelete = async (t: Tenant) => {
-    if (!confirm(`Remover "${t.name}" da lista de clientes?`)) return;
+    if (!confirm(`Remover "${t.name}" da lista de lojas?`)) return;
+    // #region debug-point D:delete-start
+    __dbg("D", "delete:start", { id: t.id, name: t.name, email: t.email, phone: t.phone, status: t.status });
+    // #endregion
     const { error } = await supabase.from("tenants").delete().eq("id", t.id);
-    if (error) { toast.error("Erro ao remover"); return; }
-    toast.success("Cliente removido!");
+    if (error) {
+      // #region debug-point D:delete-error
+      __dbg("D", "delete:error", { message: error.message, code: (error as unknown as { code?: unknown }).code, details: (error as unknown as { details?: unknown }).details });
+      // #endregion
+      toast.error("Erro ao remover");
+      return;
+    }
+    // #region debug-point D:delete-ok
+    __dbg("D", "delete:ok", { id: t.id });
+    // #endregion
+    toast.success("Loja removida!");
     load();
   };
 
   const filtered = tenants.filter((t) => {
-    const matchSearch = t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.email.toLowerCase().includes(search.toLowerCase()) ||
-      t.phone.includes(search);
+    const q = search.toLowerCase();
+    const matchSearch = t.name.toLowerCase().includes(q) ||
+      (t.email || "").toLowerCase().includes(q) ||
+      (t.phone || "").includes(search);
     const matchStatus = filterStatus === "all" || t.status === filterStatus;
-    const matchPlan = filterPlan === "all" || t.plan === filterPlan;
-    return matchSearch && matchStatus && matchPlan;
+    return matchSearch && matchStatus;
   });
-
-  const totalMRR = filtered.reduce((sum, t) => t.status === "active" ? sum + t.monthly_revenue : sum, 0);
+  // #region debug-point C:filtered
+  __dbg("C", "filtered:computed", { total: tenants.length, filtered: filtered.length, filterStatus, hasSearch: !!search });
+  // #endregion
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-['Space_Grotesk'] text-foreground">🏪 Clientes / Lojas</h1>
-          <p className="text-sm text-muted-foreground">
-            {tenants.length} clientes • MRR dos filtrados: <span className="font-semibold text-primary">R$ {totalMRR.toLocaleString("pt-BR")}</span>
-          </p>
+          <h1 className="text-2xl font-bold font-['Space_Grotesk'] text-foreground">🏪 Lojas</h1>
+          <p className="text-sm text-muted-foreground">{tenants.length} lojas cadastradas</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openNew} className="rounded-full"><Plus className="h-4 w-4 mr-1" /> Novo Cliente</Button>
+            <Button onClick={openNew} className="rounded-full"><Plus className="h-4 w-4 mr-1" /> Nova Loja</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>{editing ? "Editar Cliente" : "Novo Cliente"}</DialogTitle>
+              <DialogTitle>{editing ? "Editar Loja" : "Nova Loja"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div>
@@ -163,39 +233,22 @@ export default function CPEmpresas() {
                   <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 99999-9999" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Plano</Label>
-                  <Select value={form.plan} onValueChange={handlePlanChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="starter">Starter - R$97/mês</SelectItem>
-                      <SelectItem value="profissional">Profissional - R$197/mês</SelectItem>
-                      <SelectItem value="enterprise">Enterprise - R$397/mês</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Status</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Ativo</SelectItem>
-                      <SelectItem value="inactive">Inativo</SelectItem>
-                      <SelectItem value="trial">Trial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
               <div>
-                <Label>Valor Mensal (R$)</Label>
-                <Input type="number" value={form.monthly_revenue} onChange={(e) => setForm({ ...form, monthly_revenue: Number(e.target.value) })} />
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="inactive">Inativo</SelectItem>
+                    <SelectItem value="trial">Trial</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Observações</Label>
                 <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="Anotações sobre o cliente..." />
               </div>
-              <Button className="w-full" onClick={save}>{editing ? "Salvar Alterações" : "Adicionar Cliente"}</Button>
+              <Button className="w-full" onClick={save}>{editing ? "Salvar Alterações" : "Adicionar Loja"}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -214,15 +267,6 @@ export default function CPEmpresas() {
             <SelectItem value="active">Ativos</SelectItem>
             <SelectItem value="inactive">Inativos</SelectItem>
             <SelectItem value="trial">Trial</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterPlan} onValueChange={setFilterPlan}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Plano" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos Planos</SelectItem>
-            <SelectItem value="starter">Starter</SelectItem>
-            <SelectItem value="profissional">Profissional</SelectItem>
-            <SelectItem value="enterprise">Enterprise</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -244,16 +288,27 @@ export default function CPEmpresas() {
                       {t.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{t.phone}</span>}
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {format(new Date(t.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                        {(() => {
+                          // #region debug-point E:format-date
+                          try {
+                            const v = format(new Date(t.created_at), "dd/MM/yyyy", { locale: ptBR });
+                            return v;
+                          } catch (e) {
+                            __dbg("E", "date-format:error", {
+                              id: t.id,
+                              created_at: t.created_at,
+                              message: e instanceof Error ? e.message : String(e),
+                              stack: e instanceof Error ? e.stack : undefined,
+                            });
+                            throw e;
+                          }
+                          // #endregion
+                        })()}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <div className="text-right mr-2 hidden sm:block">
-                    <p className="text-sm font-bold text-primary">R$ {t.monthly_revenue.toLocaleString("pt-BR")}<span className="text-xs font-normal text-muted-foreground">/mês</span></p>
-                  </div>
-                  <Badge variant="secondary" className={planColors[t.plan] || ""}>{planLabels[t.plan] || t.plan}</Badge>
                   <Badge variant="secondary" className={statusColors[t.status] || ""}>{statusLabels[t.status] || t.status}</Badge>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(t)}>
                     <Pencil className="h-3.5 w-3.5" />

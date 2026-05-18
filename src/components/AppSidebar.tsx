@@ -40,7 +40,7 @@ export function AppSidebar() {
               </div>
               {!collapsed && (
                 <span className="font-bold text-foreground text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  LucenaDelivery
+                  BrandDelivery
                 </span>
               )}
             </div>

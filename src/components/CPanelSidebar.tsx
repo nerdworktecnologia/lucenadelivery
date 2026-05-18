@@ -3,7 +3,7 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Building2, CreditCard, MessageSquare, LogOut, Users, History } from "lucide-react";
+import { LayoutDashboard, Building2, MessageSquare, LogOut, Users, History } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
@@ -11,7 +11,6 @@ const menuItems = [
   { title: "Clientes / Lojas", icon: Building2, path: "/cpanel/empresas" },
   { title: "Usuários", icon: Users, path: "/cpanel/usuarios" },
   { title: "Auditoria", icon: History, path: "/cpanel/auditoria" },
-  { title: "Planos", icon: CreditCard, path: "/cpanel/planos" },
   { title: "Comunicação", icon: MessageSquare, path: "/cpanel/comunicacao" },
 ];
 
@@ -27,8 +26,8 @@ export function CPanelSidebar() {
             🍽️
           </div>
           <div>
-            <p className="font-bold text-sidebar-foreground text-sm font-['Space_Grotesk']">LucenaDelivery</p>
-            <p className="text-[11px] text-sidebar-foreground/60">Gestão de Assinantes</p>
+            <p className="font-bold text-sidebar-foreground text-sm font-['Space_Grotesk']">BrandDelivery</p>
+            <p className="text-[11px] text-sidebar-foreground/60">Administração</p>
           </div>
         </div>
       </SidebarHeader>

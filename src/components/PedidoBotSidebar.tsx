@@ -86,7 +86,7 @@ export function PedidoBotSidebar() {
               </div>
               {!collapsed && (
                 <div>
-                  <span className="font-bold text-sidebar-foreground text-sm tracking-tight">LucenaDelivery</span>
+                  <span className="font-bold text-sidebar-foreground text-sm tracking-tight">BrandDelivery</span>
                   <p className="text-[10px] text-sidebar-foreground/40 -mt-0.5">Comanda, gerencia, entrega</p>
                 </div>
               )}

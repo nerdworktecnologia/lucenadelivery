@@ -183,7 +183,7 @@ export function printComanda(order: DbOrder, type: "cozinha" | "entrega" | "comp
   ${receiptProof}
 
   <div class="cut-line"></div>
-  <div class="center footer">LucenaDelivery • ${now}</div>
+  <div class="center footer">BrandDelivery • ${now}</div>
   <div style="height:8mm"></div>
 
 </body></html>`;

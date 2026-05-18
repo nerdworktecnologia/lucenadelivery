@@ -87,7 +87,7 @@ const PBDashboard = () => {
           </div>
           <div>
             <h3 className="font-bold text-foreground">Do WhatsApp direto para a cozinha ⚡</h3>
-            <p className="text-sm text-muted-foreground">Seus pedidos são recebidos automaticamente pelo LucenaDelivery. Sem necessidade de atendimento manual.</p>
+            <p className="text-sm text-muted-foreground">Seus pedidos são recebidos automaticamente pelo BrandDelivery. Sem necessidade de atendimento manual.</p>
           </div>
         </CardContent>
       </Card>

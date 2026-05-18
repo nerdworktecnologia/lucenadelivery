@@ -52,7 +52,7 @@ export default function CPComunicacao() {
               </SelectContent>
             </Select>
           </div>
-          <div><Label>Assunto</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Ex: Novidade no LucenaDelivery!" /></div>
+          <div><Label>Assunto</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Ex: Novidade no BrandDelivery!" /></div>
           <div><Label>Mensagem</Label><Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={5} placeholder="Escreva sua mensagem aqui..." /></div>
           <Button className="w-full" onClick={sendMessage}><Send className="h-4 w-4 mr-2" /> Enviar Mensagem</Button>
         </CardContent>

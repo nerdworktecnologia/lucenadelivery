@@ -172,7 +172,7 @@ const PBWhatsApp = () => {
     });
 
     // Bot response in chat
-    addMessage("LucenaDelivery", "", `✅ Pedido #${nextNumber} enviado para a cozinha!\n\n${detectedItems.map(i => `• ${i.quantity}x ${i.product_name}`).join("\n")}\n\nTotal: R$ ${total.toFixed(2)}`, true);
+    addMessage("BrandDelivery", "", `✅ Pedido #${nextNumber} enviado para a cozinha!\n\n${detectedItems.map(i => `• ${i.quantity}x ${i.product_name}`).join("\n")}\n\nTotal: R$ ${total.toFixed(2)}`, true);
 
     toast.success(`Pedido #${nextNumber} enviado para a cozinha!`);
     setDetectedItems([]);
@@ -258,7 +258,7 @@ const PBWhatsApp = () => {
                 <div key={msg.id} className={`flex ${msg.isBot ? "justify-start" : "justify-end"}`}>
                   <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${msg.isBot ? "bg-card text-foreground border border-border rounded-bl-sm" : "bg-primary text-primary-foreground rounded-br-sm"}`}>
                     {!msg.isBot && <p className="text-xs opacity-75 mb-1 font-medium">{msg.from} • {msg.phone}</p>}
-                    {msg.isBot && <p className="text-xs text-primary font-semibold mb-1 flex items-center gap-1"><Zap className="h-3 w-3" />LucenaDelivery</p>}
+                    {msg.isBot && <p className="text-xs text-primary font-semibold mb-1 flex items-center gap-1"><Zap className="h-3 w-3" />BrandDelivery</p>}
                     <p className="whitespace-pre-line leading-relaxed">{msg.message}</p>
                     <p className={`text-[10px] mt-1.5 ${msg.isBot ? "text-muted-foreground" : "opacity-70"}`}>
                       {msg.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
